@@ -88,23 +88,24 @@ String memvalues[20];
 
 
 void readSerialPort(int *var_id, String *var_content,String values[]) {
+  int mySize = 1;
+  while (Serial.available()) {
     String msg = "";
-    int mySize = 1;
-    if (Serial.available()) {
-        delay(10);
-        while (Serial.available() > 0) {
-            msg += (char)Serial.read();
-            mySize++;
-            delay(1);
-        }
-        Serial.flush();
-        int sep_index = msg.indexOf('=');
-      *var_id = msg.substring(0, sep_index).toInt();
-      *var_content = msg.substring(sep_index + 1, mySize);
-      // *var_content = *var_content/100;
-      // Serial.print(*var_content);
-      updateValues(var_id,var_content,values);
-    }  
+    delay(10);
+    while (Serial.available() > 0) {
+      msg += (char)Serial.read();
+      mySize++;
+      delay(1);
+    }
+    Serial.flush();
+    int sep_index = msg.indexOf('=');
+    *var_id = msg.substring(0, sep_index).toInt();
+    *var_content = msg.substring(sep_index + 1, mySize);
+    // *var_content = *var_content/100;
+    // Serial.print(*var_content);
+    updateValues(var_id,var_content,values);
+    delay(100);
+  }  
 }
 
 
@@ -144,45 +145,35 @@ bool Touch_getXY(void){
     return pressed;
 }
 
-void barMenu2(uint16_t clr1, uint16_t clr2, int compteur){
-  tft.fillRect(150, 10, 180, 40, PURPLE);
-  tft.drawFastHLine(0, 50 , 500, WHITE);
-  tft.setCursor(150, 10);
-  
-  tft.setTextColor(clr1);
-  tft.print("index : ");
-  tft.setTextColor(clr2);
-  tft.print(compteur);
-  delay(250);
-}
 
 void barMenu(void){
-  tft.fillRect(164, 9, 148, 13, DARKGREY);
+  // tft.fillRect(160, 14, 152, 20, DARKGREY);
   for (int k; k<5; k++){
-    tft.fillCircle(170+34*k, 15, 6, WHITE);
+    tft.fillCircle(170+34*k, 27, 10, WHITE);
   }
-  tft.fillCircle(170+34*cpt, 15, 5, PURPLE);
-  tft.drawFastHLine(0, 50 , 500, WHITE);
+  tft.fillCircle(170+34*cpt, 27, 7, BLACK);
+  tft.drawFastHLine(0, 50 , 500, BLACK);
+  tft.drawFastHLine(0, 53 , 500, BLACK);
 }
 
 void displayDate(void){
-  tft.fillRect(330, 10, 145, 26, DARKGREY);
+  tft.fillRect(330, 12, 145, 26, BLACK);
   // tft.setCursor(330,5);
-  tft.setCursor(355,10);
+  tft.setCursor(355,12);
   tft.setTextColor(WHITE);
   tft.setTextSize(3);
   tft.print(values[0]);
 }
 void displayTemp(void){
-  tft.fillRect(5, 5, 145, 26, DARKGREY);
-  tft.setCursor(20,10);
+  tft.fillRect(5, 12, 145, 26, BLACK);
+  tft.setCursor(20,12);
   tft.setTextColor(WHITE);
   tft.setTextSize(3);
   tft.print(values[4]);
 }
 
 void describeMenu(String txt){
-  tft.fillRect(0, 41, 480, 280, BKGCOLOR);
+  tft.fillRect(5, 60, 470, 255, BLACK);
   tft.setCursor(20, 70);
   tft.setTextColor(YELLOW);
   tft.setTextSize(3);
@@ -194,9 +185,8 @@ void cleanBar(){
   displayDate();
   displayTemp();
   barMenu();
-  tft.drawFastHLine(0, 40 , 500, WHITE);
+  tft.drawFastHLine(0, 40 , 500, BLACK);
 }
-
 
 
 bool checkValues(String values[],String memvalues[],int tocheck[],int size){
@@ -261,17 +251,19 @@ void setup() {
     if (ID == 0xD3D3) ID = 0x9486;
     tft.begin(ID);
     tft.setRotation(1);            
-    tft.fillScreen(BKGCOLOR);
+    tft.fillScreen(WHITE);
     barMenu();
-    tft.fillRect(5, 5, 470, 40, DARKGREY);
+    tft.fillRect(5, 5, 470, 40, BLACK);
     values[0] = "heure";
     values[1] = "jour";
     values[2] = "mois";
     values[3] = "annee";
     values[4] = "temp";
-    values[5] = "netTemp";
+    values[5] = "netT";
     values[6] = "humid";
     values[7] = "dtJ";
+    values[8] = "Presence";
+    values[9] = "description";
 }
 
 void loop() {
@@ -289,23 +281,30 @@ void loop() {
  
   // Defilement du menu
   if(cpt == 0 ){
-    int myCheck[] = {1,2,3};
-    if(memcpt != cpt || checkValues(values,memvalues,myCheck,3)){
-      tft.fillRect(0, 41, 480, 280, BKGCOLOR);
+    int myCheck[] = {1,2,3,5,7,9};
+    if(memcpt != cpt || checkValues(values,memvalues,myCheck,6)){
+      tft.fillRect(5, 60, 470, 255, BLACK);
       delay(10);
       tft.setTextColor(ORANGE);
       tft.setTextSize(5);
       tft.setCursor(40,80);
-      tft.print(values[7]);
+      tft.print(values[1]); //jour
       tft.print(" - ");
-      tft.print(values[1]);
+      tft.print(values[7]); // date du jour
       tft.setTextColor(WHITE);
       tft.setCursor(40,150);
-      tft.print(values[2]);
+      tft.print(values[2]); // mois
       tft.setCursor(40, 230);
-      tft.print(values[3]);
+      tft.print(values[3]); // annee 
+      tft.setCursor(260,150);
+      tft.setTextSize(3);
+      tft.setTextColor(CYAN);
+      tft.print("T.xt: "); 
+      tft.print(values[5]); // temperature externe
+      tft.setCursor(220,200);
+      tft.print(values[9]);
       // Serial.println(dayOfW[3]);
-      sameValues(values,memvalues,myCheck,3);
+      sameValues(values,memvalues,myCheck,6);
       memcpt = cpt;
     }
   }
@@ -313,7 +312,7 @@ void loop() {
   if(cpt == 1 ){// MENU TEMPERATURE
   int myCheck1[] = {4,5,6};
     if(memcpt != cpt || checkValues(values,memvalues,myCheck1,3)){
-      tft.fillRect(0, 41, 480, 280, BKGCOLOR);
+      tft.fillRect(5, 60, 470, 255, BLACK);
       tft.setTextColor(WHITE);
       tft.setTextSize(4);
       tft.setCursor(40,80);

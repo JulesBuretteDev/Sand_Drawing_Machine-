@@ -4,7 +4,7 @@ import datetime
 import subprocess
 import board
 import adafruit_dht
-import psutil
+# import psutil
 import RPi.GPIO as GPIO
 import requests
 
@@ -55,12 +55,10 @@ class Arduino:
         return f"port: {self.com_port}"
 
 def disable_usb_port_linux(port):
-    subprocess.run(['sudo', 'udevadm', 'test-builtin', 'usb', f'{port}:1.0'], check=True, capture_output=True)
-    subprocess.run(['sudo', 'udevadm', 'trigger', '--attr-match=subsystem=usb', '--action=remove'], check=True)
+    subprocess.call(["sudo", "ifconfig", port, "down"])
 
 def enable_usb_port_linux(port):
-    subprocess.run(['sudo', 'udevadm', 'test-builtin', 'usb', f'{port}:1.0'], check=True, capture_output=True)
-    subprocess.run(['sudo', 'udevadm', 'trigger', '--attr-match=subsystem=usb', '--action=add'], check=True)
+    subprocess.call(["sudo", "ifconfig", port, "up"])
 
 def disable_usb_port(port):
     subprocess.run(['devcon', 'disable', f'USB\\{port}'], check=True, capture_output=True)
@@ -78,7 +76,7 @@ def sendValuesToArduino(values,memValues):
             sendValue(values[k],myArduino)
             memValues[k].val = values[k].val
             while(len(myArduino.ser.read_all()) == 0):
-                time.sleep(0.5)
+                time.sleep(0.1)
 
 def makeValues(values):
     "function to search the values for the raspy"
@@ -86,33 +84,42 @@ def makeValues(values):
     values[1].val = time.strftime("%A")
     values[2].val = time.strftime("%B")
     values[3].val = time.strftime('%Y')
-    values[4].val = sensor.temperature
-    values[5].val = getWeather()
-    values[6].val = sensor.humidity
+    values[4].val, values[6].val = getTempAndHumid()
+    values[5].val, values[9].val = getWeather()
     values[7].val = time.strftime('%d')
     values[8].val = presence
+    
 
 def sendValue(value:Value,arduino:Arduino):
     "function to send a value to the arduino"
+    # print(f"{value.id}={value.val}")
     myArduino.ser.write(f"{value.id}={value.val}".encode())
 
 def getTempAndHumid():
-        temp = sensor.temperature
-        humidity = sensor.humidity
-        return temp,humidity
+        try:
+            temp = sensor.temperature
+            humidity = sensor.humidity
+            return temp,humidity
+        except:
+                # print("trouble dht")
+                return memValues.values[4].val,memValues.values[6].val
+        
 
 
-for proc in psutil.process_iter():
-    if proc.name() == 'libgpiod_pulsein' or proc.name() == 'libgpiod_pulsei':
-        proc.kill()
+# for proc in psutil.process_iter():
+#     if proc.name() == 'libgpiod_pulsein' or proc.name() == 'libgpiod_pulsei':
+#         proc.kill()
 
 def getWeather():
-    response = requests.get(url)
-    data = response.json()
-    return data['main']['temp']
+    try:
+        response = requests.get(url)
+        data = response.json()
+        return str(int(float(data['main']['temp']) - 273.15)), data['weather'][0]['description'] 
+    except:
+        return "T.xt", "descr"
 
-myValues = Values([Value("heure",0,""),Value("jour",1,""),Value("mois",2,""),Value("annee",3,""),Value("temp",4,""),Value("netTemp",5,""),Value("humid",6,""),Value("dateJour",7,""),Value("presence",8,"")])
-memValues = Values([Value("heure",0,""),Value("jour",1,""),Value("mois",2,""),Value("annee",3,""),Value("temp",4,""),Value("netTemp",5,""),Value("humid",6,""),Value("dateJour",7,""),Value("presence",8,"")])
+myValues = Values([Value("heure",0,""),Value("jour",1,""),Value("mois",2,""),Value("annee",3,""),Value("temp",4,""),Value("netTemp",5,""),Value("humid",6,""),Value("dateJour",7,""),Value("presence",8,""),Value("descW",9,"")])
+memValues = Values([Value("heure",0,""),Value("jour",1,""),Value("mois",2,""),Value("annee",3,""),Value("temp",4,""),Value("netTemp",5,""),Value("humid",6,""),Value("dateJour",7,""),Value("presence",8,""),Value("descW",9,"")])
 # print(myValues)
 myArduino = Arduino("/dev/ttyACM0")
 # print(myArduino)
@@ -136,6 +143,11 @@ while True:
         sendValuesToArduino(myvalues,mymemvalues)
     # if(len(myArduino.ser.read_all()) > 0):
     #     print("ok")
-    print(presence)
+    # print(presence)
     time.sleep(10)
+    # what = input("what to do o/f")
+    # if what == "f":
+    #     disable_usb_port_linux("/dev/ttyACM0")
+    # if what == "o":
+    #     enable_usb_port_linux("/dev/ttyACM0")
         
