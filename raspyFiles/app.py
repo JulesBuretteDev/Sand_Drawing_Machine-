@@ -1,4 +1,6 @@
 from flask import Flask, render_template, request
+import Data
+from myClass import * 
 
 app = Flask(__name__)
 
@@ -12,7 +14,7 @@ class Imprimante3DIHM:
 
 @app.route('/')
 def index():
-    return render_template('index.html', position=imprimante.position_extrudeur, nom_imprimante=imprimante.nom_imprimante, reglages=imprimante.reglages)
+    return render_template('index.html', position=imprimante.position_extrudeur, nom_imprimante=imprimante.nom_imprimante, reglages=imprimante.reglages,values = Data.myValues.values)
 
 @app.route('/envoyer_commande', methods=['POST'])
 def envoyer_commande(self):
