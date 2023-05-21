@@ -1,8 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Jul's Website</title>
+    <div>
+        <title>Jul's Website</title>
+        <form action="/toggle" method="POST">
+            <button type="submit">Toggle</button>
+        </form>
+    </div>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <header>
     <h1>Jul's Website</h1>
@@ -17,11 +23,19 @@
         </p>
     </section>
     <section class="mySectionBody">
-        <h2 class="titrepartie">Interface Imprimante 3D</h2>
-        <h3>Position de l'extrudeur:</h3>
-        <p>{{ position }}</p>
-        <h3>Nom de l'imprimante:</h3>
-        <p>{{ nom_imprimante }}</p>
+        <sub>
+            <h2 class="titrepartie">Interface Imprimante 3D</h2>
+            <h3>Position de l'extrudeur:</h3>
+            <p>{{ position }}</p>
+            <h3>My Plot-Plot</h3>
+        </sub>
+        <sub>
+            <div class="printer">
+                <div id="extruder">
+                    
+                </div>
+            </div>
+        </sub>
     </section>
     <section class="mySectionBody">
         <h2 class="titrepartie">Réglages:</h2>
@@ -37,10 +51,24 @@
     
     <section class="mySectionBody">
         <h2 class="titrepartie">Commande manuelle:</h2>
-        <form method="post" action="/envoyer_commande">
-            <input type="text" name="commande">
-            <input type="submit" value="Envoyer">
+        <form method="post" action="/sendXY">
+            <input type="number" id="myX" name="myX" placeholder="X :">
+            <input type="number" id="myY" name="myY" placeholder="Y :">
+            <button type="submit">Send Value</button>
         </form>
     </section>
+
+    <script>
+        // $(document).ready(function() {
+        //     // Set a timeout to reload the page every 5 seconds
+        //     setTimeout(function() {
+        //         location.reload();
+        //     }, 5000);
+        // });
+        var extruder = document.getElementById("extruder");
+        extruder.style.top = "{{values[11].val}}px";
+        extruder.style.left = "{{values[12].val}}px";
+        extruder.classList.add("move-extruder");
+    </script>
 </body>
 </html>
