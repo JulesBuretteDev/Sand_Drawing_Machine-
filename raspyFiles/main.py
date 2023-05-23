@@ -47,7 +47,7 @@ def launchBoth():
     # thread1.start()
     # thread2.start()
     launchWeb()
-    launchArduino()
+    # launchArduino()
     
 
 
