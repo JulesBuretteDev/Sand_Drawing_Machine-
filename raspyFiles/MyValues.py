@@ -94,7 +94,7 @@ class Values:
         for value in self.AllMyValues:
             if(value.send == 0):
                 self.sendValue(value,arduino)
-                print(value)
+                # print(value)
                 value.send = 1
                 while(len(arduino.ser.read_all()) == 0):
                     time.sleep(1)

@@ -10,7 +10,11 @@ app = Flask(__name__)
 
 #setup
 
-myScreen = Arduino(9600,1)
+subprocess.call("sudo uhubctl -l 1-1 -p 3 -a off", shell=True)
+subprocess.call("sudo uhubctl -l 1-1 -p 4 -a off", shell=True)
+
+time.sleep(3)
+myScreen = Arduino(9600,2)
 
 
 
@@ -33,6 +37,7 @@ def toggle():
         # sendAllValuesToArduino(myValues,memValues)
     if myScreen.state == False:
         myScreen.turnArdOn()
+        myValues.valuesToZ()
         myScreen.state = True
     return render_template('index.html', position=imprimante.position_extrudeur, nom_imprimante=imprimante.nom_imprimante, reglages=imprimante.reglages,values =myValues.AllMyValues)
 
@@ -67,7 +72,7 @@ def launchBoth():
     # Start the threads
     # thread1.start()
     thread2.start()
-    # launchWeb()
+    launchWeb()
     # launchArduino()
     
 

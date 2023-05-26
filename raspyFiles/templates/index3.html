@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>3D Printer Viewer</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/riot@4.12.0/dist/riot.min.css">
+    <style>
+        #canvas {
+            width: 500px;
+            height: 500px;
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <h1>3D Printer Viewer</h1>
+    <div id="canvas"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/riot@4.12.0/dist/riot.min.js"></script>
+    <script>
+        // Riot.js component to handle the 3D printer viewer
+        riot.component('printer-viewer', {
+            init: function () {
+                this.x = 0.0;
+                this.y = 0.0;
+
+                this.getPosition();
+                setInterval(this.getPosition.bind(this), 1000); // Update position every second
+            },
+
+            getPosition: function () {
+                // Make a GET request to the Flask server to get the real-time position
+                fetch('/position')
+                    .then(response => response.json())
+                    .then(data => {
+                        this.x = data.x;
+                        this.y = data.y;
+                        this.update();
+                    });
+            },
+
+            render: function () {
+                return `
+                    <div>
+                        <p>Position: (${this.x}, ${this.y})</p>
+                        <div id="extruder" style="position: absolute; left: ${this.x}px; top: ${this.y}px;"></div>
+                    </div>
+                `;
+            }
+        });
+
+        // Mount the printer-viewer component
+        riot.mount('#canvas', 'printer-viewer');
+    </script>
+</body>
+</html>
