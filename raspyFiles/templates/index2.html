@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <div>
+        <title>Jul's Website</title>
+        <form action="/toggle" method="POST">
+            <button type="submit">Toggle</button>
+        </form>
+    </div>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<header>
+    <h1>Jul's Website</h1>
+</header>
+<body class="myBody">
+    <section class="mySectionBody">
+        <H2 class="titrepartie">My data</H2>
+        <p class="mydata">
+            {% for val in values %}
+                <p>{{ val.name }} : {{val.val}} </p>
+            {% endfor %}
+        </p>
+    </section>
+    <section class="mySectionBody">
+        <sub>
+            <h2 class="titrepartie">Interface Imprimante 3D</h2>
+            <h3>Position de l'extrudeur:</h3>
+            <p>{{ position }}</p>
+            <h3>My Plot-Plot</h3>
+        </sub>
+        <sub>
+            <div class="printer">
+                <div id="extruder">
+                    
+                </div>
+            </div>
+        </sub>
+    </section>
+    <section class="mySectionBody">
+        <h2 class="titrepartie">Réglages:</h2>
+        <form method="post" action="/envoyer_commande">
+            <select name="reglages">
+                {% for reglage in reglages %}
+                    <option value="{{ reglage }}">{{ reglage }}</option>
+                {% endfor %}
+            </select>
+            <input type="submit" value="Appliquer">
+        </form>
+    </section>
+    
+    <section class="mySectionBody">
+        <h2 class="titrepartie">Commande manuelle:</h2>
+        <form method="post" action="/sendXY">
+            <input type="number" id="myX" name="myX" placeholder="X :">
+            <input type="number" id="myY" name="myY" placeholder="Y :">
+            <button type="submit">Send Value</button>
+        </form>
+    </section>
+
+    <script>
+        // $(document).ready(function() {
+        //     // Set a timeout to reload the page every 5 seconds
+        //     setTimeout(function() {
+        //         location.reload();
+        //     }, 5000);
+        // });
+        var extruder = document.getElementById("extruder");
+        extruder.style.top = "{{values[11].val}}px";
+        extruder.style.left = "{{values[12].val}}px";
+        extruder.classList.add("move-extruder");
+    </script>
+</body>
+</html>

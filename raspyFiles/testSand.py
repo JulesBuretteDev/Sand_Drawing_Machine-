@@ -3,6 +3,7 @@ import serial
 import time
 import random as rd
 import os
+from threading import Event
 
 class MySandPrinter:
     minPointY = 0
@@ -40,14 +41,27 @@ class MySandPrinter:
 
     def sendCheck(self):
         "Methode permettant de bloquer le script tant que la valeur n'a pas été accepté"
-        while self.com.readline() != b'ok\r\n':
-            print("waiting for buffer")
-            time.sleep(1)
-        time.sleep(0.5)
-        print(self.com.readline())
+        while b'ok' not in self.com.readline():
+            pass
+        print(self.com.readlines())
         self.com.flush()
         
-        
+    def wait_for_movement_completion(self,cleaned_line):
+        Event().wait(1)
+        if cleaned_line != '$X' or '$$':
+            idle_counter = 0
+            while True:
+                # Event().wait(0.01)
+                self.com.reset_input_buffer()
+                command = str.encode('?' + '\n')
+                self.com.write(command)
+                grbl_out = self.com.readline() 
+                grbl_response = grbl_out.strip().decode('utf-8')
+                if grbl_response != 'ok':
+                    if grbl_response.find('Idle') > 0:
+                        idle_counter += 1
+                if idle_counter > 10:
+                    break
         
 
     def manualPrinting(self):
@@ -98,14 +112,19 @@ class Sandify:
 
 # Initialisation 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-sandPrinter = MySandPrinter("COM3")
+sandPrinter = MySandPrinter("/dev/ttyACM0")
+sandPrinter.sendAValue("G1 F1000")
 
 
 
 
 while 1:
     wtd = input("what to do? ")
-    if "G" in wtd :
+    if "quit" in wtd :
+        sandPrinter.addSteps("G1 X0 Y0 F2500")
+        sandPrinter.trySending()
+        exit()
+    elif "G" in wtd :
         sandPrinter.sendAValue(wtd)
         sandPrinter.sendCheck()
     else: 
