@@ -1,7 +1,10 @@
 # Sand Drawing Machine — Plan d'architecture (v2)
 
-> Document de réflexion pour la reprise du projet. Rien n'est encore implémenté.
-> Questions ouvertes : choix de l'écran (option A ou B, §3.6) et techno du front (Svelte ou HTMX, §4).
+> Document de réflexion pour la reprise du projet. Le logiciel n'est pas encore implémenté.
+> Questions ouvertes : techno du front (Svelte ou HTMX, §4).
+> Décisions prises depuis : mécanique CoreXY dans `docs/MECANIQUE.md`, électronique (Pi 4B + Uno GRBL +
+> TMC2209, bloc 19 V) dans `docs/HARDWARE.md`. Pour l'écran (§3.6), l'option A est déjà en place :
+> une Arduino Mega + TFT branchée sur la Pi affiche l'état de la Pi.
 
 ## 1. Ce qu'on garde de la v1
 
